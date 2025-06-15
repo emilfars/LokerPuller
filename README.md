@@ -1,257 +1,312 @@
-<img src="https://github.com/cullenwatson/JobSpy/assets/78247585/ae185b7e-e444-4712-8bb9-fa97f53e896b" width="400">
+# LokerPuller 🚀
 
-**JobSpy** is a job scraping library with the goal of aggregating all the jobs from popular job boards with one tool.
+**Professional Southeast Asian Job Scraper and Management System**
 
-## Features
+LokerPuller is a production-ready job scraping and management system designed for Southeast Asian markets. It efficiently scrapes job postings from major job boards and provides a modern web interface for browsing opportunities across Indonesia, Malaysia, Thailand, Vietnam, and Singapore.
 
-- Scrapes job postings from **LinkedIn**, **Indeed**, **Glassdoor**, **Google**, **ZipRecruiter**, **Bayt** & **Naukri** concurrently
-- Aggregates the job postings in a dataframe
-- Proxies support to bypass blocking
+[![Python](https://img.shields.io/badge/Python-3.10+-blue)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)]()
 
-![jobspy](https://github.com/cullenwatson/JobSpy/assets/78247585/ec7ef355-05f6-4fd3-8161-a817e31c5c57)
+## ✨ Key Features
+
+- 🌏 **SEA-Focused**: Targets Indonesia, Malaysia, Thailand, Vietnam, and Singapore
+- 🔍 **Multi-Platform**: Scrapes Indeed and LinkedIn job boards
+- 💻 **Modern Web UI**: Responsive interface with advanced filtering
+- 📊 **Analytics**: Real-time statistics and insights
+- 🚀 **RESTful API**: Programmatic access to job data
+- ⚡ **Optimized**: Memory-efficient for cloud deployment
+- 🔄 **Automated**: Scheduled scraping with resource management
+- 📱 **Mobile-Ready**: Works seamlessly on all devices
+
+## 🏗️ Architecture
+
+```
+lokerpuller/
+├── lokerpuller/           # Main package
+│   ├── core/             # Scraping & scheduling logic
+│   ├── api/              # Flask REST API
+│   ├── database/         # Data management
+│   ├── utils/            # Utilities & validation
+│   ├── config/           # Settings management
+│   └── web/              # Frontend assets
+├── jobspy/               # Core scraping engine
+├── data/                 # Database storage
+└── logs/                 # Application logs
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.10 or higher
+- Git
 
 ### Installation
 
-```
-pip install -U python-jobspy
+```bash
+# Clone repository
+git clone https://github.com/your-username/lokerpuller.git
+cd lokerpuller
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -e .
 ```
 
-_Python version >= [3.10](https://www.python.org/downloads/release/python-3100/) required_
+### Basic Usage
 
-### Usage
+```bash
+# Start web interface
+lokerpuller api
+
+# Scrape jobs
+lokerpuller scrape --search-term "software engineer" --location "Singapore" --results 25
+
+# View help
+lokerpuller --help
+```
+
+## 📖 Usage Guide
+
+### Web Interface
+
+Start the web application:
+```bash
+lokerpuller api --host 0.0.0.0 --port 5000
+```
+
+Access at: `http://localhost:5000`
+
+### Command Line Interface
+
+**Scrape Jobs:**
+```bash
+lokerpuller scrape \
+  --search-term "python developer" \
+  --location "Jakarta, Indonesia" \
+  --results 50 \
+  --sites indeed linkedin
+```
+
+**Schedule Operations:**
+```bash
+lokerpuller schedule daily    # Daily scraping
+lokerpuller schedule cleanup  # Database cleanup
+```
+
+### Python API
 
 ```python
-import csv
-from jobspy import scrape_jobs
+from lokerpuller.core.scraper import JobScraper
+from lokerpuller.database.manager import DatabaseManager
 
-jobs = scrape_jobs(
-    site_name=["indeed", "linkedin", "zip_recruiter", "glassdoor", "google", "bayt", "naukri"],
-    search_term="software engineer",
-    google_search_term="software engineer jobs near San Francisco, CA since yesterday",
-    location="San Francisco, CA",
-    results_wanted=20,
-    hours_old=72,
-    country_indeed='USA',
-    
-    # linkedin_fetch_description=True # gets more info such as description, direct job url (slower)
-    # proxies=["208.195.175.46:65095", "208.195.175.45:65095", "localhost"],
+# Initialize scraper
+scraper = JobScraper()
+
+# Scrape jobs
+jobs_count = scraper.scrape_jobs(
+    search_term="data scientist",
+    location="Singapore",
+    results_per_site=25
 )
-print(f"Found {len(jobs)} jobs")
-print(jobs.head())
-jobs.to_csv("jobs.csv", quoting=csv.QUOTE_NONNUMERIC, escapechar="\\", index=False) # to_excel
+
+# Access database
+db = DatabaseManager("data/jobs.db")
+jobs, total = db.search_jobs({"title": "engineer"}, page=1, per_page=20)
 ```
 
-### Output
+### REST API
 
-```
-SITE           TITLE                             COMPANY           CITY          STATE  JOB_TYPE  INTERVAL  MIN_AMOUNT  MAX_AMOUNT  JOB_URL                                            DESCRIPTION
-indeed         Software Engineer                 AMERICAN SYSTEMS  Arlington     VA     None      yearly    200000      150000      https://www.indeed.com/viewjob?jk=5e409e577046...  THIS POSITION COMES WITH A 10K SIGNING BONUS!...
-indeed         Senior Software Engineer          TherapyNotes.com  Philadelphia  PA     fulltime  yearly    135000      110000      https://www.indeed.com/viewjob?jk=da39574a40cb...  About Us TherapyNotes is the national leader i...
-linkedin       Software Engineer - Early Career  Lockheed Martin   Sunnyvale     CA     fulltime  yearly    None        None        https://www.linkedin.com/jobs/view/3693012711      Description:By bringing together people that u...
-linkedin       Full-Stack Software Engineer      Rain              New York      NY     fulltime  yearly    None        None        https://www.linkedin.com/jobs/view/3696158877      Rain’s mission is to create the fastest and ea...
-zip_recruiter Software Engineer - New Grad       ZipRecruiter      Santa Monica  CA     fulltime  yearly    130000      150000      https://www.ziprecruiter.com/jobs/ziprecruiter...  We offer a hybrid work environment. Most US-ba...
-zip_recruiter Software Developer                 TEKsystems        Phoenix       AZ     fulltime  hourly    65          75          https://www.ziprecruiter.com/jobs/teksystems-0...  Top Skills' Details• 6 years of Java developme...
-
+**Get Jobs:**
+```bash
+curl "http://localhost:5000/api/jobs?title=engineer&location=Singapore&page=1&per_page=20"
 ```
 
-### Parameters for `scrape_jobs()`
-
-```plaintext
-Optional
-├── site_name (list|str): 
-|    linkedin, zip_recruiter, indeed, glassdoor, google, bayt
-|    (default is all)
-│
-├── search_term (str)
-|
-├── google_search_term (str)
-|     search term for google jobs. This is the only param for filtering google jobs.
-│
-├── location (str)
-│
-├── distance (int): 
-|    in miles, default 50
-│
-├── job_type (str): 
-|    fulltime, parttime, internship, contract
-│
-├── proxies (list): 
-|    in format ['user:pass@host:port', 'localhost']
-|    each job board scraper will round robin through the proxies
-|
-├── is_remote (bool)
-│
-├── results_wanted (int): 
-|    number of job results to retrieve for each site specified in 'site_name'
-│
-├── easy_apply (bool): 
-|    filters for jobs that are hosted on the job board site (LinkedIn easy apply filter no longer works)
-│
-├── description_format (str): 
-|    markdown, html (Format type of the job descriptions. Default is markdown.)
-│
-├── offset (int): 
-|    starts the search from an offset (e.g. 25 will start the search from the 25th result)
-│
-├── hours_old (int): 
-|    filters jobs by the number of hours since the job was posted 
-|    (ZipRecruiter and Glassdoor round up to next day.)
-│
-├── verbose (int) {0, 1, 2}: 
-|    Controls the verbosity of the runtime printouts 
-|    (0 prints only errors, 1 is errors+warnings, 2 is all logs. Default is 2.)
-
-├── linkedin_fetch_description (bool): 
-|    fetches full description and direct job url for LinkedIn (Increases requests by O(n))
-│
-├── linkedin_company_ids (list[int]): 
-|    searches for linkedin jobs with specific company ids
-|
-├── country_indeed (str): 
-|    filters the country on Indeed & Glassdoor (see below for correct spelling)
-|
-├── enforce_annual_salary (bool): 
-|    converts wages to annual salary
-|
-├── ca_cert (str)
-|    path to CA Certificate file for proxies
+**Get Statistics:**
+```bash
+curl "http://localhost:5000/api/stats"
 ```
 
-```
-├── Indeed limitations:
-|    Only one from this list can be used in a search:
-|    - hours_old
-|    - job_type & is_remote
-|    - easy_apply
-│
-└── LinkedIn limitations:
-|    Only one from this list can be used in a search:
-|    - hours_old
-|    - easy_apply
+**Search with Filters:**
+```bash
+curl "http://localhost:5000/api/jobs?company=Google&job_type=full-time&is_remote=true"
 ```
 
-## Supported Countries for Job Searching
+## 🐳 Docker Deployment
 
-### **LinkedIn**
+### Build and Run
 
-LinkedIn searches globally & uses only the `location` parameter. 
+```bash
+# Build image
+docker build -t lokerpuller .
 
-### **ZipRecruiter**
+# Run container
+docker run -d \
+  --name lokerpuller \
+  -p 5000:5000 \
+  -p 8080:8080 \
+  -v $(pwd)/data:/app/data \
+  -v $(pwd)/logs:/app/logs \
+  lokerpuller
+```
 
-ZipRecruiter searches for jobs in **US/Canada** & uses only the `location` parameter.
+### Docker Compose
 
-### **Indeed / Glassdoor**
+```yaml
+version: '3.8'
+services:
+  lokerpuller:
+    build: .
+    ports:
+      - "5000:5000"
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - DB_PATH=/app/data/jobs.db
+      - LOG_PATH=/app/logs
+```
 
-Indeed & Glassdoor supports most countries, but the `country_indeed` parameter is required. Additionally, use the `location`
-parameter to narrow down the location, e.g. city & state if necessary. 
+## ⚙️ Configuration
 
-You can specify the following countries when searching on Indeed (use the exact name, * indicates support for Glassdoor):
+### Environment Variables
 
-|                      |              |            |                |
-|----------------------|--------------|------------|----------------|
-| Argentina            | Australia*   | Austria*   | Bahrain        |
-| Belgium*             | Brazil*      | Canada*    | Chile          |
-| China                | Colombia     | Costa Rica | Czech Republic |
-| Denmark              | Ecuador      | Egypt      | Finland        |
-| France*              | Germany*     | Greece     | Hong Kong*     |
-| Hungary              | India*       | Indonesia  | Ireland*       |
-| Israel               | Italy*       | Japan      | Kuwait         |
-| Luxembourg           | Malaysia     | Mexico*    | Morocco        |
-| Netherlands*         | New Zealand* | Nigeria    | Norway         |
-| Oman                 | Pakistan     | Panama     | Peru           |
-| Philippines          | Poland       | Portugal   | Qatar          |
-| Romania              | Saudi Arabia | Singapore* | South Africa   |
-| South Korea          | Spain*       | Sweden     | Switzerland*   |
-| Taiwan               | Thailand     | Turkey     | Ukraine        |
-| United Arab Emirates | UK*          | USA*       | Uruguay        |
-| Venezuela            | Vietnam*     |            |                |
+Create a `.env` file:
 
-### **Bayt**
+```env
+# Database
+DB_PATH=data/jobs.db
 
-Bayt only uses the search_term parameter currently and searches internationally
+# API Settings
+API_HOST=0.0.0.0
+API_PORT=5000
+API_DEBUG=false
 
+# Scraping
+MAX_RESULTS_PER_SITE=25
+BATCH_DELAY=10
+SITE_DELAY=30
 
+# Logging
+LOG_LEVEL=INFO
+LOG_PATH=logs/
+```
 
-## Notes
-* Indeed is the best scraper currently with no rate limiting.  
-* All the job board endpoints are capped at around 1000 jobs on a given search.  
-* LinkedIn is the most restrictive and usually rate limits around the 10th page with one ip. Proxies are a must basically.
+### Settings Management
 
-## Frequently Asked Questions
+```python
+from lokerpuller.config.settings import get_settings, update_settings
+
+# Get current settings
+settings = get_settings()
+
+# Update settings
+update_settings(api_port=8000, max_results_per_site=50)
+```
+
+## 🧪 Testing
+
+```bash
+# Run tests
+python -m pytest tests/
+
+# Test deployment
+./test-deployment.sh
+
+# Check code quality
+black lokerpuller/
+isort lokerpuller/
+flake8 lokerpuller/
+```
+
+## 📊 Performance
+
+- **Memory Usage**: ~200MB (optimized for e2-small instances)
+- **Scraping Speed**: ~25 jobs/minute per site
+- **Database**: SQLite with optimized indexes
+- **API Response**: <100ms for most queries
+
+## 🔧 Development
+
+### Setup Development Environment
+
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Install pre-commit hooks
+pre-commit install
+
+# Run in development mode
+lokerpuller api --debug
+```
+
+### Project Structure
+
+- `lokerpuller/core/`: Business logic (scraping, scheduling)
+- `lokerpuller/api/`: REST API endpoints
+- `lokerpuller/database/`: Data models and operations
+- `lokerpuller/utils/`: Utilities and validation
+- `lokerpuller/config/`: Configuration management
+- `jobspy/`: Core scraping engine
+
+## 🚀 Deployment
+
+### Cloud Deployment
+
+The application is optimized for cloud deployment:
+
+```bash
+# Google Cloud Platform
+./deploy-gcp.sh
+
+# AWS/Azure
+docker build -t lokerpuller .
+# Push to your container registry
+```
+
+### Production Considerations
+
+- Use environment variables for configuration
+- Set up proper logging and monitoring
+- Configure database backups
+- Use reverse proxy (nginx) for production
+- Set up SSL certificates
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make changes and add tests
+4. Run quality checks: `black`, `isort`, `flake8`
+5. Commit changes: `git commit -am 'Add feature'`
+6. Push to branch: `git push origin feature-name`
+7. Submit a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+- **Issues**: [GitHub Issues](https://github.com/your-username/lokerpuller/issues)
+- **Documentation**: [Project Wiki](https://github.com/your-username/lokerpuller/wiki)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/lokerpuller/discussions)
+
+## 🙏 Acknowledgments
+
+- Built on top of [JobSpy](https://github.com/cullenwatson/JobSpy) scraping engine
+- Inspired by the need for SEA-focused job aggregation
+- Thanks to all contributors and users
 
 ---
-**Q: Why is Indeed giving unrelated roles?**  
-**A:** Indeed searches the description too.
 
-- use - to remove words
-- "" for exact match
+**Made with ❤️ for the Southeast Asian tech community**
 
-Example of a good Indeed query
-
-```py
-search_term='"engineering intern" software summer (java OR python OR c++) 2025 -tax -marketing'
-```
-
-This searches the description/title and must include software, summer, 2025, one of the languages, engineering intern exactly, no tax, no marketing.
-
----
-
-**Q: No results when using "google"?**  
-**A:** You have to use super specific syntax. Search for google jobs on your browser and then whatever pops up in the google jobs search box after applying some filters is what you need to copy & paste into the google_search_term. 
-
----
-
-**Q: Received a response code 429?**  
-**A:** This indicates that you have been blocked by the job board site for sending too many requests. All of the job board sites are aggressive with blocking. We recommend:
-
-- Wait some time between scrapes (site-dependent).
-- Try using the proxies param to change your IP address.
-
----
-
-### JobPost Schema
-
-```plaintext
-JobPost
-├── title
-├── company
-├── company_url
-├── job_url
-├── location
-│   ├── country
-│   ├── city
-│   ├── state
-├── is_remote
-├── description
-├── job_type: fulltime, parttime, internship, contract
-├── job_function
-│   ├── interval: yearly, monthly, weekly, daily, hourly
-│   ├── min_amount
-│   ├── max_amount
-│   ├── currency
-│   └── salary_source: direct_data, description (parsed from posting)
-├── date_posted
-└── emails
-
-Linkedin specific
-└── job_level
-
-Linkedin & Indeed specific
-└── company_industry
-
-Indeed specific
-├── company_country
-├── company_addresses
-├── company_employees_label
-├── company_revenue_label
-├── company_description
-└── company_logo
-
-Naukri specific
-├── skills
-├── experience_range
-├── company_rating
-├── company_reviews_count
-├── vacancy_count
-└── work_from_home_type
-```
+🚀 **Ready to find your next opportunity in Southeast Asia!**

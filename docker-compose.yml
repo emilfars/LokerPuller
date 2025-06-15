@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  jobspy:
+    build: .
+    container_name: jobspy-scraper
+    restart: unless-stopped
+    
+    environment:
+      - DB_PATH=/app/data/jobs.db
+      - LOG_PATH=/app/logs
+      - TZ=UTC
+    
+    volumes:
+      # Persist database and logs
+      - jobspy_data:/app/data
+      - jobspy_logs:/app/logs
+    
+    ports:
+      # Health check endpoint
+      - "8080:8080"
+      # Job board web interface
+      - "5000:5000"
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+volumes:
+  jobspy_data:
+    driver: local
+  jobspy_logs:
+    driver: local 

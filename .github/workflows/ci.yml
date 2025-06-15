@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .
+    
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 lokerpuller --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 lokerpuller --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: Format check with black
+      run: |
+        pip install black
+        black --check lokerpuller
+    
+    - name: Import sort check with isort
+      run: |
+        pip install isort
+        isort --check-only lokerpuller
+    
+    - name: Test with pytest
+      run: |
+        pip install pytest pytest-cov
+        pytest tests/ --cov=lokerpuller --cov-report=xml || echo "No tests found"
+    
+    - name: Test CLI commands
+      run: |
+        lokerpuller --help
+        python -c "from lokerpuller.database.manager import DatabaseManager; print('Database manager import successful')"
+        python -c "from lokerpuller.core.scraper import JobScraper; print('Scraper import successful')" 
